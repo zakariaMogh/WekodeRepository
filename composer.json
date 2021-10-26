@@ -1,0 +1,28 @@
+{
+    "name": "wekode/repository",
+    "description": "Repository pattern setup",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "zakariaMogh",
+            "email": "zakaria.dehaba@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Wekode\\Repository\\": "/src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wekode\\Repository"
+            ]
+        }
+    },
+    "require": {
+        "php": "^7.3|^8.0"
+    }
+}
