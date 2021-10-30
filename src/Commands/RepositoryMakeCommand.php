@@ -87,20 +87,8 @@ class RepositoryMakeCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        $repositoryNamespace = $this->getNamespace($name);
-
         $replace = [];
-
-        $contractClass = str_replace('Repository', 'Contract', $this->getNameInput());
-        $this->call('make:contract', ['name' => $contractClass]);
         $replace = $this->buildRepositoryReplacements($replace, $name);
-
-        $replace["use {$repositoryNamespace}\Repository;\n"] = '';
-
-        $contents = file_get_contents(app_path('Providers\RepositoryServiceProvider.php'));
-        $contents = str_replace('protected $repos = [' , 'protected $repos = [
-    \App\Contracts\\'.$contractClass.'::class=> \App\Repositories\\'.$this->getNameInput().'::class,', $contents);
-        $this->files->put(app_path('Providers\RepositoryServiceProvider.php'), $contents);
 
         return str_replace(
             array_keys($replace), array_values($replace), parent::buildClass($name)
@@ -116,42 +104,41 @@ class RepositoryMakeCommand extends GeneratorCommand
      */
     public function handle()
     {
+
         if (parent::handle() === false && !$this->option('force')) {
             return false;
         }
+        if ($this->option('all')) {
+            $this->input->setOption('factory', true);
+            $this->input->setOption('seed', true);
+            $this->input->setOption('model', true);
+            $this->input->setOption('resource', true);
+        }
+
+        $this->createContract(); // Create contract class
+        $this->linkRepositoryContract(); // Link contract and repository in the ServiceProvider
 
         if ($this->option('model')) {
 
             $this->createModel();
         }
 
+        if ($this->option('seed')) {
 
-    }
+            $this->createSeed();
+        }
+
+        if ($this->option('factory')) {
+
+            $this->createFactory();
+        }
+
+        if ($this->option('resource')) {
+
+            $this->createResource();
+        }
 
 
-    /**
-     * Build the model replacement values.
-     *
-     * @param  array  $replace
-     * @return array
-     */
-    protected function buildContractReplacements(array $replace, $name)
-    {
-        $contractClass = str_replace('Repository', 'Contract', $name);
-
-        $this->call('make:contract', ['name' => $contractClass]);
-        return array_merge($replace, [
-//            'DummyFullModelClass' => $contractClass,
-//            '{{ namespacedModel }}' => $contractClass,
-//            '{{namespacedModel}}' => $contractClass,
-//            'DummyModelClass' => class_basename($contractClass),
-//            '{{ model }}' => class_basename($contractClass),
-//            '{{model}}' => class_basename($contractClass),
-//            'DummyModelVariable' => lcfirst(class_basename($contractClass)),
-//            '{{ modelVariable }}' => lcfirst(class_basename($contractClass)),
-//            '{{modelVariable}}' => lcfirst(class_basename($contractClass)),
-
-        ]);
     }
 
     /**
@@ -196,16 +183,63 @@ class RepositoryMakeCommand extends GeneratorCommand
         return $this->qualifyModel($model);
     }
 
+    protected function createContract()
+    {
+        $contract = Str::studly(class_basename($this->argument('name')));
+        $contract = str_replace('Repository', 'Contract', $contract);
+        $this->call('make:contract', [
+            'name' => $contract
+        ]);
+    }
+
     protected function createModel()
     {
         $model = Str::studly(class_basename($this->argument('name')));
         $model = str_replace('Repository', '', $model);
         $this->call('make:model', [
             'name' => $model,
-            '-m' => true,
-            '-f' => true,
-            '-s' => true,
+            '-m' => true
         ]);
+    }
+
+    protected function createSeed()
+    {
+        $seeder = Str::studly(class_basename($this->argument('name')));
+        $seeder = str_replace('Repository', '', $seeder);
+        $this->call('make:seeder', [
+            'name' => $seeder
+        ]);
+    }
+
+    protected function createFactory()
+    {
+        $factory = Str::studly(class_basename($this->argument('name')));
+        $factory = str_replace('Repository', '', $factory);
+        $this->call('make:factory', [
+            'name' => $factory
+        ]);
+    }
+
+    protected function createResource()
+    {
+        $resource = Str::studly(class_basename($this->argument('name')));
+        $resource = str_replace('Repository', '', $resource);
+        $this->call('make:resource', [
+            'name' => $resource
+        ]);
+    }
+
+    protected function linkRepositoryContract()
+    {
+        $contractClass = str_replace('Repository', 'Contract', $this->getNameInput()); // Get contract class name
+        $contents = file_get_contents(app_path('Providers\RepositoryServiceProvider.php')); // Get the content of the Service provider file
+
+        $contents = str_replace('protected $repos = [',
+            'protected $repos = [
+    \App\Contracts\\'.$contractClass.'::class=> \App\Repositories\\'.$this->getNameInput().'::class,',
+            $contents); // Add the line that links the contract and repository
+
+        $this->files->put(app_path('Providers\RepositoryServiceProvider.php'), $contents); // Change the content of the service provider with the new one
     }
 
     /**
@@ -216,7 +250,11 @@ class RepositoryMakeCommand extends GeneratorCommand
     protected function getOptions()
     {
         return [
-            ['model', 'm', InputOption::VALUE_NONE, 'Create a new model'],
+            ['model', 'm', InputOption::VALUE_NONE, 'Create a new model and migration'],
+            ['seed', 's', InputOption::VALUE_NONE, 'Create a new seeder'],
+            ['factory', 'f', InputOption::VALUE_NONE, 'Create a new factory'],
+            ['resource', 'r', InputOption::VALUE_NONE, 'Generate a new resource'],
+            ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, seeder, factory and resource for the repository'],
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the controller already exists'],
         ];
     }

@@ -53,9 +53,6 @@ class ContractMakeCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        $repositoryNamespace = $this->getNamespace($name);
-        $replace = [];
-
         $contractClass = $this->getNameInput();
 
         $replace = [
@@ -70,15 +67,6 @@ class ContractMakeCommand extends GeneratorCommand
         );
     }
 
-    protected function createModel()
-    {
-        $model = Str::studly(class_basename($this->argument('name')));
-
-        $this->call('make:model', [
-            'name' => $model,
-            '-m', '-f', '-s'
-        ]);
-    }
 
     /**
      * Get the stub file for the generator.
@@ -114,24 +102,4 @@ class ContractMakeCommand extends GeneratorCommand
         return is_dir(app_path('Contracts')) ? $rootNamespace . '\\Contracts' : $rootNamespace;
     }
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return [
-//            ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, seeder, factory, policy, and resource controller for the model'],
-//            ['controller', 'c', InputOption::VALUE_NONE, 'Create a new controller for the model'],
-//            ['factory', 'f', InputOption::VALUE_NONE, 'Create a new factory for the model'],
-//            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the model already exists'],
-//            ['model', 'm', InputOption::VALUE_NONE, 'Create a new model'],
-//            ['policy', null, InputOption::VALUE_NONE, 'Create a new policy for the model'],
-//            ['seed', 's', InputOption::VALUE_NONE, 'Create a new seeder for the model'],
-//            ['pivot', 'p', InputOption::VALUE_NONE, 'Indicates if the generated model should be a custom intermediate table model'],
-//            ['resource', 'r', InputOption::VALUE_NONE, 'Indicates if the generated controller should be a resource controller'],
-//            ['api', null, InputOption::VALUE_NONE, 'Indicates if the generated controller should be an API controller'],
-        ];
-    }
 }
