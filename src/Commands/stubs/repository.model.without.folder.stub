@@ -1,0 +1,42 @@
+<?php
+
+
+namespace {{ namespace }};
+
+
+use App\Contracts\{{ contractClass }};
+use App\{{ model }};
+
+class {{ class }} extends BaseRepositories implements {{ contractClass }}
+{
+
+    /**
+     * @param {{ model }} $model
+     * @param array $filters
+     */
+    public function __construct({{ model }} $model, array $filters = [])
+    {
+        parent::__construct($model, $filters);
+    }
+
+    public function new(array $data)
+    {
+        return $this->model::create($data);
+    }
+
+    public function update($id, array $data)
+    {
+        ${{ modelVariable }} = $this->findOneById($id);
+
+        ${{ modelVariable }}->update($data);
+
+        return ${{ modelVariable }};
+    }
+
+    public function destroy($id)
+    {
+        ${{ modelVariable }} = $this->findOneById($id);
+
+        return ${{ modelVariable }}->delete();
+    }
+}

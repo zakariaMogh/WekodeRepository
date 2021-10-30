@@ -48,7 +48,12 @@ class RepositoryMakeCommand extends GeneratorCommand
     {
         $stub = null;
 
-        $stub = '/stubs/repository.model.stub';
+
+        if ( file_exists( app_path('Models') ) && is_dir( app_path('Models') ) ) {
+            $stub = '/stubs/repository.model.stub';
+        }else{
+            $stub = '/stubs/repository.model.without.folder.stub';
+        }
 
         return $this->resolveStubPath($stub);
     }
