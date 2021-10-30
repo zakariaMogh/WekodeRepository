@@ -31,5 +31,23 @@ php artisan vendor:publish --provider="Wekode\Repository\RepositorySetupServiceP
 
 ## Usage
 
-// TODO
+This package comes with a command that creates the repositories and contracts.
 
+```shell
+php artisan make:repository PostRepository
+```
+
+This command will create a repository file, a contract file and links the in the RespositoryServiceProvider.
+PS: the used model will be the first word of the Repository file name (ex : PostRepository will be linked to the model Post)
+
+In case the model does not exist you can use this command 
+
+```shell
+php artisan make:repository PostRepository -m
+```
+
+This command will create the repository as well as execute a model creation command
+
+```shell
+php artisan make:model Post -all
+```
