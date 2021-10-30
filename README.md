@@ -42,11 +42,17 @@ PS: the used model will be the first word of the Repository file name (ex : Post
 In case the model does not exist you can use this command 
 
 ```shell
-php artisan make:repository PostRepository -m
+php artisan make:repository PostRepository -a
 ```
 
 This command will create the repository as well as execute a model creation command
 
 ```shell
 php artisan make:model Post -all
+```
+
+Or if you do not want to create everything you can specify the option.
+
+```shell
+php artisan make:repository PostRepository -m -s -f -r
 ```
