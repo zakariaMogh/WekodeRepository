@@ -53,7 +53,7 @@ class ContractMakeCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        $contractClass = $this->getNameInput();
+        $contractClass = $this->setNameInput($this->getNameInput());
 
         $replace = [
             'DummyContractClass' => $contractClass,
@@ -100,6 +100,40 @@ class ContractMakeCommand extends GeneratorCommand
     protected function getDefaultNamespace($rootNamespace)
     {
         return is_dir(app_path('Contracts')) ? $rootNamespace . '\\Contracts' : $rootNamespace;
+    }
+
+    /**
+     * Parse the class name and format according to the root namespace.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    protected function qualifyClass($name)
+    {
+        $name = ltrim($name, '\\/');
+
+        $name = str_replace('/', '\\', $name);
+
+        $name = $this->setNameInput($name);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($name, $rootNamespace)) {
+            return $name;
+        }
+
+        return $this->qualifyClass(
+            $this->getDefaultNamespace(trim($rootNamespace, '\\')).'\\'.$name
+        );
+    }
+
+    protected function setNameInput($name)
+    {
+        if(strpos($name, 'Contract') !== false){
+            return $name;
+        } else{
+            return $name . 'Contract';
+        }
     }
 
 }

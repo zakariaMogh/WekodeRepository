@@ -49,9 +49,9 @@ class RepositoryMakeCommand extends GeneratorCommand
         $stub = null;
 
 
-        if ( file_exists( app_path('Models') ) && is_dir( app_path('Models') ) ) {
+        if (file_exists(app_path('Models')) && is_dir(app_path('Models'))) {
             $stub = '/stubs/repository.model.stub';
-        }else{
+        } else {
             $stub = '/stubs/repository.model.without.folder.stub';
         }
 
@@ -61,25 +61,25 @@ class RepositoryMakeCommand extends GeneratorCommand
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : __DIR__.$stub;
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Repositories';
+        return $rootNamespace . '\Repositories';
     }
 
     /**
@@ -87,12 +87,13 @@ class RepositoryMakeCommand extends GeneratorCommand
      *
      * Remove the base controller import if we are already in the base namespace.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function buildClass($name)
     {
         $replace = [];
+        $name = $this->setNameInput($name);
         $replace = $this->buildRepositoryReplacements($replace, $name);
 
         return str_replace(
@@ -100,7 +101,14 @@ class RepositoryMakeCommand extends GeneratorCommand
         );
     }
 
-
+    protected function setNameInput($name)
+    {
+        if(strpos($name, 'Repository') !== false){
+            return $name;
+        } else{
+            return $name . 'Repository';
+        }
+    }
 
     /**
      * Execute the console command.
@@ -149,7 +157,7 @@ class RepositoryMakeCommand extends GeneratorCommand
     /**
      * Build the model replacement values.
      *
-     * @param  array  $replace
+     * @param array $replace
      * @return array
      */
     protected function buildRepositoryReplacements(array $replace, $name)
@@ -174,7 +182,7 @@ class RepositoryMakeCommand extends GeneratorCommand
     /**
      * Get the fully-qualified model class name.
      *
-     * @param  string  $model
+     * @param string $model
      * @return string
      *
      * @throws \InvalidArgumentException
@@ -241,7 +249,7 @@ class RepositoryMakeCommand extends GeneratorCommand
 
         $contents = str_replace('protected $repos = [',
             'protected $repos = [
-    \App\Contracts\\'.$contractClass.'::class=> \App\Repositories\\'.$this->getNameInput().'::class,',
+    \App\Contracts\\' . $contractClass . '::class=> \App\Repositories\\' . $this->getNameInput() . '::class,',
             $contents); // Add the line that links the contract and repository
 
         $this->files->put(app_path('Providers\RepositoryServiceProvider.php'), $contents); // Change the content of the service provider with the new one
@@ -262,5 +270,31 @@ class RepositoryMakeCommand extends GeneratorCommand
             ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, seeder, factory and resource for the repository'],
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the controller already exists'],
         ];
+    }
+
+
+    /**
+     * Parse the class name and format according to the root namespace.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    protected function qualifyClass($name)
+    {
+        $name = ltrim($name, '\\/');
+
+        $name = str_replace('/', '\\', $name);
+
+        $name = $this->setNameInput($name);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($name, $rootNamespace)) {
+            return $name;
+        }
+
+        return $this->qualifyClass(
+            $this->getDefaultNamespace(trim($rootNamespace, '\\')).'\\'.$name
+        );
     }
 }
