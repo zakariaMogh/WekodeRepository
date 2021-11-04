@@ -103,9 +103,9 @@ class RepositoryMakeCommand extends GeneratorCommand
 
     protected function setNameInput($name)
     {
-        if(strpos($name, 'Repository') !== false){
+        if (strpos($name, 'Repository') !== false) {
             return $name;
-        } else{
+        } else {
             return $name . 'Repository';
         }
     }
@@ -133,6 +133,11 @@ class RepositoryMakeCommand extends GeneratorCommand
 
         if ($this->option('model')) {
 
+            $this->createModel();
+        }
+        elseif (!file_exists('App\\Models\\' . $this->getNameInput(). '.php')
+            && !file_exists('App\\' . $this->getNameInput().'.php'))
+        {
             $this->createModel();
         }
 
@@ -209,10 +214,14 @@ class RepositoryMakeCommand extends GeneratorCommand
     {
         $model = Str::studly(class_basename($this->argument('name')));
         $model = str_replace('Repository', '', $model);
-        $this->call('make:model', [
-            'name' => $model,
-            '-m' => true
-        ]);
+        try {
+            $this->call('make:model', [
+                'name' => $model,
+                '-m' => true
+            ]);
+        }catch (\Exception $e){
+            $this->error('Migration already exists!');
+        }
     }
 
     protected function createSeed()
@@ -276,7 +285,7 @@ class RepositoryMakeCommand extends GeneratorCommand
     /**
      * Parse the class name and format according to the root namespace.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function qualifyClass($name)
@@ -294,7 +303,7 @@ class RepositoryMakeCommand extends GeneratorCommand
         }
 
         return $this->qualifyClass(
-            $this->getDefaultNamespace(trim($rootNamespace, '\\')).'\\'.$name
+            $this->getDefaultNamespace(trim($rootNamespace, '\\')) . '\\' . $name
         );
     }
 }
