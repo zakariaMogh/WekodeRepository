@@ -253,12 +253,13 @@ class RepositoryMakeCommand extends GeneratorCommand
 
     protected function linkRepositoryContract()
     {
-        $contractClass = str_replace('Repository', 'Contract', $this->getNameInput()); // Get contract class name
+        $contractClass = str_replace('Repository', '', $this->getNameInput()).'Contract'; // Get contract class name
+        $repositoryClass = str_replace('Repository', '', $this->getNameInput()).'Repository'; // Get contract class name
         $contents = file_get_contents(app_path('Providers\RepositoryServiceProvider.php')); // Get the content of the Service provider file
 
         $contents = str_replace('protected $repos = [',
             'protected $repos = [
-    \App\Contracts\\' . $contractClass . '::class=> \App\Repositories\\' . $this->getNameInput() . '::class,',
+    \App\Contracts\\' . $contractClass . '::class=> \App\Repositories\\' . $repositoryClass . '::class,',
             $contents); // Add the line that links the contract and repository
 
         $this->files->put(app_path('Providers\RepositoryServiceProvider.php'), $contents); // Change the content of the service provider with the new one
